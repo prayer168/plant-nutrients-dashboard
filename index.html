@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>植物如何獲取養分</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(135deg, #0a1f0a, #1a3a1a, #0d2a1a);
+    min-height: 100vh;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    position: relative;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #56ab2f, #a8e063, #f9d423, #56ab2f);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+  .title-badge {
+    display: inline-block;
+    background: rgba(86,171,47,0.18);
+    border: 2px solid #a8e063;
+    border-radius: 50px;
+    padding: 6px 24px;
+    font-size: 13px;
+    color: #a8e063;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #a8e063, #56ab2f, #f9d423);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  header p {
+    color: #aad4b5;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== NAV ===== */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px 20px 10px;
+    flex-wrap: wrap;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(255,255,255,0.15);
+    color: #ccc;
+    padding: 12px 28px;
+    border-radius: 40px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .nav-btn.active {
+    background: linear-gradient(135deg, #56ab2f, #a8e063);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(86,171,47,0.5);
+    transform: translateY(-2px);
+  }
+  .nav-btn .icon { font-size: 20px; }
+
+  /* ===== CONTENT ===== */
+  .content { padding: 10px 20px 60px; max-width: 1200px; margin: 0 auto; }
+  .panel { display: none; animation: fadeIn 0.5s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+
+  .panel-title {
+    text-align: center;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800;
+    margin: 20px 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  /* ===== EQUATION BOX ===== */
+  .equation-box {
+    background: rgba(0,0,0,0.35);
+    border: 2px solid rgba(168,224,99,0.5);
+    border-radius: 18px;
+    padding: 18px 28px;
+    text-align: center;
+    font-size: clamp(13px, 2vw, 17px);
+    color: #d4f5a0;
+    letter-spacing: 1px;
+    margin-bottom: 26px;
+    backdrop-filter: blur(8px);
+    line-height: 2;
+  }
+  .equation-box strong { color: #fff; }
+  .eq-arrow { color: #a8e063; font-size: 1.4em; font-weight: 900; margin: 0 8px; }
+
+  /* ===== FLOW ARROWS ===== */
+  .flow-arrows {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+  .flow-in, .flow-out { display: flex; flex-direction: column; gap: 10px; }
+  .flow-label { font-weight: 700; text-align: center; margin-bottom: 4px; font-size: 14px; }
+  .flow-in .flow-label { color: #87ceeb; }
+  .flow-out .flow-label { color: #a8e063; }
+  .flow-item {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.3s;
+  }
+  .flow-item:hover { transform: scale(1.03); }
+  .flow-item .fi-icon { font-size: 28px; flex-shrink: 0; }
+  .flow-in  .flow-item { border-color: rgba(135,206,235,0.5); background: rgba(135,206,235,0.1); }
+  .flow-out .flow-item { border-color: rgba(168,224,99,0.5);  background: rgba(168,224,99,0.1); }
+  .arrow-center { font-size: 50px; text-align: center; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+  .flow-item-sub { font-size: 11px; color: #999; font-weight: 400; margin-top: 2px; }
+
+  /* ===== STEPS GRID ===== */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-top: 10px;
+  }
+  .step-card {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+  }
+  .step-card:hover {
+    background: rgba(86,171,47,0.18);
+    border-color: #a8e063;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 28px rgba(86,171,47,0.3);
+  }
+  .step-num {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #56ab2f, #a8e063);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+  }
+  .step-card .step-icon { font-size: 42px; margin-bottom: 10px; }
+  .step-card h3 { font-size: 15px; margin-bottom: 8px; color: #a8e063; font-weight: 700; }
+  .step-card p { font-size: 13px; color: #aaa; line-height: 1.6; }
+
+  /* ===== SCENE (Panel 1 animation) ===== */
+  .photo-scene {
+    background: linear-gradient(180deg, #87ceeb 0%, #c8eaab 65%, #5a8a3c 100%);
+    border-radius: 24px;
+    padding: 30px 20px;
+    position: relative;
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .sun {
+    position: absolute;
+    top: 22px; right: 70px;
+    width: 76px; height: 76px;
+    background: radial-gradient(circle, #fff7a1, #f9d423, #f39c12);
+    border-radius: 50%;
+    box-shadow: 0 0 30px 14px rgba(249,212,35,0.45);
+    animation: pulse-sun 3s ease-in-out infinite;
+  }
+  @keyframes pulse-sun {
+    0%,100% { box-shadow: 0 0 30px 14px rgba(249,212,35,0.4); }
+    50%      { box-shadow: 0 0 55px 28px rgba(249,212,35,0.65); }
+  }
+  .sun-ray {
+    position: absolute;
+    background: rgba(249,212,35,0.55);
+    width: 3px; height: 48px;
+    left: 50%; top: 50%;
+    transform-origin: top center;
+    border-radius: 3px;
+  }
+  .light-beam {
+    position: absolute;
+    top: 0; right: 90px;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255,240,100,0.6), transparent);
+    animation: beam-move 4s ease-in-out infinite;
+  }
+  .light-beam:nth-child(2) { right: 130px; animation-delay: 1s; opacity: 0.7; }
+  .light-beam:nth-child(3) { right: 160px; animation-delay: 2s; opacity: 0.5; }
+  @keyframes beam-move {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* CO2 bubbles */
+  .co2-bubble {
+    position: absolute;
+    left: 30px;
+    background: rgba(200,230,255,0.5);
+    border: 1px solid rgba(135,206,235,0.7);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #1a3a6a; font-weight: 700;
+    animation: bubble-rise 4s ease-in infinite;
+  }
+  @keyframes bubble-rise {
+    0%   { transform: translateY(160px) scale(0.8); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 0.8; }
+    100% { transform: translateY(-20px) scale(1.1); opacity: 0; }
+  }
+  .o2-bubble {
+    position: absolute;
+    right: 30px;
+    background: rgba(168,224,99,0.35);
+    border: 1px solid rgba(86,171,47,0.6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #1a4a1a; font-weight: 700;
+    animation: bubble-rise2 3.5s ease-in infinite;
+  }
+  @keyframes bubble-rise2 {
+    0%   { transform: translateY(120px) scale(0.7); opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 0.7; }
+    100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+  }
+
+  .leaf-container { display: flex; flex-direction: column; align-items: center; z-index: 2; }
+  .leaf-svg { filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25)); }
+  .leaf-label {
+    color: #1a4a1a; font-weight: 700; font-size: 12px;
+    background: rgba(255,255,255,0.5); border-radius: 8px;
+    padding: 4px 12px; margin-top: -8px;
+  }
+
+  /* ===== ROOT PANEL ===== */
+  .root-scene {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 700px) { .root-scene { grid-template-columns: 1fr; } }
+
+  .soil-diagram {
+    background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 25%, #c8a96e 25%, #c8a96e 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    min-height: 300px;
+    padding: 20px;
+  }
+  .sky-label {
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    color: #1a3a6a; font-weight: 700; font-size: 13px;
+  }
+  .soil-label {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translateX(-50%);
+    color: #5a3a1a; font-weight: 700; font-size: 13px;
+  }
+  .root-svg { width: 100%; height: 100%; }
+
+  .mineral-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .mineral-card {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .mineral-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .mineral-card .mc-icon { font-size: 32px; margin-bottom: 8px; }
+  .mineral-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .mineral-card p  { font-size: 12px; color: #aaa; line-height: 1.5; }
+  .mc-n { border-top: 3px solid #4fc3f7; }
+  .mc-p { border-top: 3px solid #f48fb1; }
+  .mc-k { border-top: 3px solid #ffd54f; }
+  .mc-ca{ border-top: 3px solid #a5d6a7; }
+  .mc-mg{ border-top: 3px solid #ce93d8; }
+  .mc-fe{ border-top: 3px solid #ef9a9a; }
+
+  /* Root hair animation */
+  .root-info-box {
+    background: rgba(139,90,43,0.3);
+    border: 1.5px solid rgba(200,160,100,0.5);
+    border-radius: 16px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #d4b896;
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+  .root-info-box strong { color: #f0d090; }
+
+  /* osmosis diagram */
+  .osmosis-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .osmosis-card {
+    flex: 1;
+    min-width: 180px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .osmosis-card:hover { transform: translateY(-4px); border-color: rgba(168,224,99,0.5); }
+  .osmosis-card .oc-icon { font-size: 38px; margin-bottom: 8px; }
+  .osmosis-card h4 { font-size: 14px; font-weight: 700; color: #a8e063; margin-bottom: 6px; }
+  .osmosis-card p  { font-size: 12px; color: #aaa; line-height: 1.5; }
+
+  /* ===== SPECIAL STRATEGIES ===== */
+  .strategy-tabs {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 24px;
+  }
+  .stab {
+    padding: 9px 22px;
+    border-radius: 30px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.07);
+    color: #ccc; cursor: pointer;
+    font-size: 14px; font-weight: 600;
+    transition: all 0.25s;
+  }
+  .stab.active, .stab:hover {
+    background: linear-gradient(135deg, #56ab2f, #a8e063);
+    border-color: transparent; color: #fff;
+  }
+  .stab-panel { display: none; }
+  .stab-panel.active { display: block; animation: fadeIn 0.4s ease; }
+
+  .special-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .scard {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 22px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .scard::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .scard.carnivore::before  { background: linear-gradient(90deg, #ff416c, #ff4b2b); }
+  .scard.parasite::before   { background: linear-gradient(90deg, #8e44ad, #c0392b); }
+  .scard.mycorrhiza::before { background: linear-gradient(90deg, #f39c12, #e67e22); }
+  .scard.nitrogen::before   { background: linear-gradient(90deg, #1abc9c, #16a085); }
+  .scard.epiphyte::before   { background: linear-gradient(90deg, #3498db, #2980b9); }
+  .scard.lithophyte::before { background: linear-gradient(90deg, #95a5a6, #7f8c8d); }
+
+  .scard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    border-color: rgba(168,224,99,0.4);
+  }
+  .scard .sc-icon { font-size: 46px; margin-bottom: 10px; }
+  .scard h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #e0f0c0; }
+  .scard p  { font-size: 13px; color: #aaa; line-height: 1.65; }
+  .scard .sc-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(86,171,47,0.2);
+    border: 1px solid rgba(86,171,47,0.4);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 12px; color: #a8e063; font-weight: 600;
+    margin-top: 10px;
+  }
+  .scard .sc-example { font-size: 12px; color: #ccc; margin-top: 8px; font-style: italic; }
+
+  .strategy-intro {
+    text-align: center;
+    color: #aad4b5; font-size: 15px;
+    margin-bottom: 26px; line-height: 1.7;
+  }
+
+  /* ===== COMPARISON TABLE ===== */
+  .section-title {
+    font-size: 18px; font-weight: 700; color: #a8e063;
+    text-align: center; margin: 32px 0 16px;
+  }
+  .compare-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px; overflow: hidden;
+  }
+  .compare-table th {
+    background: rgba(86,171,47,0.28);
+    padding: 12px 16px; text-align: left;
+    font-weight: 700; color: #a8e063;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .compare-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: #ccc; vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.04); }
+
+  /* ===== FUNFACT BAR ===== */
+  .funfact-bar {
+    background: linear-gradient(135deg, rgba(86,171,47,0.18), rgba(168,224,99,0.08));
+    border: 1.5px solid rgba(168,224,99,0.4);
+    border-radius: 16px;
+    padding: 16px 22px;
+    margin-top: 26px;
+    display: flex; align-items: flex-start; gap: 14px;
+    font-size: 14px; color: #d4f5a0; line-height: 1.65;
+  }
+  .funfact-bar .fb-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ===== NUTRIENT CYCLE PANEL ===== */
+  .cycle-diagram {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 30px 20px;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .cycle-nodes {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .cycle-node {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(168,224,99,0.4);
+    border-radius: 50%;
+    width: 110px; height: 110px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; text-align: center;
+    transition: all 0.3s; cursor: default;
+    gap: 4px;
+  }
+  .cycle-node:hover {
+    border-color: #a8e063;
+    background: rgba(86,171,47,0.25);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(86,171,47,0.35);
+  }
+  .cycle-node .cn-icon { font-size: 30px; }
+  .cycle-arrow {
+    font-size: 28px; color: #a8e063;
+    animation: arrow-pulse 2s ease-in-out infinite;
+  }
+  @keyframes arrow-pulse {
+    0%,100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .nutrient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .nutrient-card {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+  .nutrient-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168,224,99,0.5);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .nutrient-card .nc-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .nutrient-card .nc-icon { font-size: 32px; }
+  .nutrient-card h4 { font-size: 15px; font-weight: 700; color: #a8e063; }
+  .nutrient-card .nc-sub { font-size: 11px; color: #888; }
+  .nutrient-card p { font-size: 13px; color: #bbb; line-height: 1.6; }
+  .nc-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+    margin: 6px 2px 0;
+  }
+  .nc-macro { background: rgba(168,224,99,0.2); color: #a8e063; border: 1px solid rgba(168,224,99,0.4); }
+  .nc-micro { background: rgba(79,195,247,0.2); color: #4fc3f7; border: 1px solid rgba(79,195,247,0.4); }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 40px;
+    flex-wrap: wrap; margin-top: 50px; padding: 24px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: 34px; font-weight: 900;
+    background: linear-gradient(135deg, #a8e063, #56ab2f);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; display: block;
+  }
+  .stat-label { font-size: 13px; color: #888; margin-top: 2px; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .flow-arrows { grid-template-columns: 1fr; }
+    .arrow-center { transform: rotate(90deg); }
+    .mineral-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="title-badge">自然科學 · 生命世界</div>
+  <h1>🌿 植物如何獲取養分</h1>
+  <p>光合作用 · 根部吸收 · 特殊策略 · 養分循環</p>
+</header>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showPanel(0,this)">
+    <span class="icon">☀️</span> 光合作用
+  </button>
+  <button class="nav-btn" onclick="showPanel(1,this)">
+    <span class="icon">🌱</span> 根部吸收
+  </button>
+  <button class="nav-btn" onclick="showPanel(2,this)">
+    <span class="icon">🪤</span> 特殊策略
+  </button>
+  <button class="nav-btn" onclick="showPanel(3,this)">
+    <span class="icon">♻️</span> 養分循環
+  </button>
+</div>
+
+<div class="content">
+
+<!-- ============================================================
+     PANEL 0: 光合作用
+     ============================================================ -->
+<div class="panel active" id="panel-0">
+  <div class="panel-title">☀️ 光合作用：植物的太陽能工廠</div>
+
+  <!-- Animated scene -->
+  <div class="photo-scene">
+    <!-- Light beams -->
+    <div class="light-beam"></div>
+    <div class="light-beam"></div>
+    <div class="light-beam"></div>
+    <!-- Sun -->
+    <div class="sun">
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(0deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(45deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(90deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(135deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(180deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(225deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(270deg)"></div>
+      <div class="sun-ray" style="transform:translateX(-50%) rotate(315deg)"></div>
+    </div>
+    <!-- CO2 bubbles -->
+    <div class="co2-bubble" style="width:38px;height:38px;bottom:0;animation-delay:0s;">CO₂</div>
+    <div class="co2-bubble" style="width:30px;height:30px;bottom:0;left:60px;animation-delay:1.5s;">CO₂</div>
+    <div class="co2-bubble" style="width:34px;height:34px;bottom:0;left:20px;animation-delay:3s;">CO₂</div>
+    <!-- O2 bubbles -->
+    <div class="o2-bubble" style="width:36px;height:36px;bottom:0;animation-delay:0.5s;">O₂</div>
+    <div class="o2-bubble" style="width:28px;height:28px;bottom:0;right:60px;animation-delay:2s;">O₂</div>
+    <div class="o2-bubble" style="width:32px;height:32px;bottom:0;right:20px;animation-delay:3.5s;">O₂</div>
+    <!-- Leaf SVG -->
+    <div class="leaf-container">
+      <svg class="leaf-svg" width="160" height="160" viewBox="0 0 160 160">
+        <defs>
+          <radialGradient id="lgLeaf" cx="40%" cy="40%">
+            <stop offset="0%" stop-color="#b5e878"/>
+            <stop offset="100%" stop-color="#2d8a2d"/>
+          </radialGradient>
+        </defs>
+        <line x1="80" y1="148" x2="80" y2="105" stroke="#5a8a3c" stroke-width="6" stroke-linecap="round"/>
+        <path d="M80,18 C122,18 152,52 152,92 C152,122 122,142 80,142 C38,142 8,122 8,92 C8,52 38,18 80,18 Z" fill="url(#lgLeaf)"/>
+        <line x1="80" y1="28" x2="80" y2="132" stroke="#2d6a2d" stroke-width="2.2" opacity="0.55"/>
+        <line x1="80" y1="58" x2="48" y2="78" stroke="#2d6a2d" stroke-width="1.5" opacity="0.5"/>
+        <line x1="80" y1="58" x2="112" y2="78" stroke="#2d6a2d" stroke-width="1.5" opacity="0.5"/>
+        <line x1="80" y1="82" x2="40" y2="98" stroke="#2d6a2d" stroke-width="1.4" opacity="0.45"/>
+        <line x1="80" y1="82" x2="120" y2="98" stroke="#2d6a2d" stroke-width="1.4" opacity="0.45"/>
+        <line x1="80" y1="104" x2="54" y2="116" stroke="#2d6a2d" stroke-width="1.2" opacity="0.4"/>
+        <line x1="80" y1="104" x2="106" y2="116" stroke="#2d6a2d" stroke-width="1.2" opacity="0.4"/>
+        <!-- Chloroplasts -->
+        <circle cx="62" cy="62" r="5" fill="#6bcf3d" opacity="0.85">
+          <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="98" cy="68" r="5" fill="#6bcf3d" opacity="0.85">
+          <animate attributeName="r" values="5;3;5" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="72" cy="88" r="4" fill="#6bcf3d" opacity="0.75">
+          <animate attributeName="r" values="3;5;3" dur="1.8s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="92" r="5" fill="#6bcf3d" opacity="0.85">
+          <animate attributeName="r" values="4;7;4" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="54" cy="82" r="4" fill="#6bcf3d" opacity="0.65">
+          <animate attributeName="r" values="3;5;3" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="88" cy="54" r="4" fill="#6bcf3d" opacity="0.7">
+          <animate attributeName="r" values="4;6;4" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="leaf-label">🔬 葉綠體正在運作！</div>
+    </div>
+  </div>
+
+  <!-- Equation -->
+  <div class="equation-box">
+    <strong>光合作用化學方程式</strong><br>
+    <span>💧 水（H₂O）&nbsp;＋&nbsp;🌬️ 二氧化碳（CO₂）&nbsp;＋&nbsp;☀️ 光能</span>
+    <span class="eq-arrow">⟶</span>
+    <span>🍬 葡萄糖（C₆H₁₂O₆）&nbsp;＋&nbsp;💨 氧氣（O₂）</span>
+    <br><small style="color:#888;font-size:12px;">（反應場所：葉片的葉綠體；條件：需要光照）</small>
+  </div>
+
+  <!-- In / Out flow -->
+  <div class="flow-arrows">
+    <div class="flow-in">
+      <div class="flow-label">📥 原料（輸入）</div>
+      <div class="flow-item">
+        <span class="fi-icon">💧</span>
+        <div>
+          <strong>水分（H₂O）</strong>
+          <div class="flow-item-sub">由根部吸收，經木質部輸送至葉片</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <span class="fi-icon">🌬️</span>
+        <div>
+          <strong>二氧化碳（CO₂）</strong>
+          <div class="flow-item-sub">空氣中的CO₂透過氣孔進入葉片</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <span class="fi-icon">☀️</span>
+        <div>
+          <strong>光能（太陽光）</strong>
+          <div class="flow-item-sub">葉綠素吸收紅光與藍紫光最有效</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-center">⚡</div>
+    <div class="flow-out">
+      <div class="flow-label">📤 產物（輸出）</div>
+      <div class="flow-item">
+        <span class="fi-icon">🍬</span>
+        <div>
+          <strong>葡萄糖（有機養分）</strong>
+          <div class="flow-item-sub">儲存能量，供植物生長與繁殖</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <span class="fi-icon">💨</span>
+        <div>
+          <strong>氧氣（O₂）</strong>
+          <div class="flow-item-sub">由氣孔排出，是地球氧氣的主要來源</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <span class="fi-icon">💧</span>
+        <div>
+          <strong>水蒸氣（蒸散）</strong>
+          <div class="flow-item-sub">部分水分由氣孔蒸散，帶動水分上升</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 Steps -->
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-icon">🌱</div>
+      <h3>根部吸水</h3>
+      <p>根毛細胞大量接觸土壤，吸收水分與溶解礦物質，透過木質部向上輸送</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-icon">🔬</div>
+      <h3>葉綠素捕光</h3>
+      <p>葉片中的葉綠素吸收太陽光，尤以紅光（680 nm）與藍紫光（430 nm）最有效</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-icon">⚗️</div>
+      <h3>光化學反應</h3>
+      <p>在葉綠體類囊體膜上，光能將水分解，釋出氧氣；再於基質中將CO₂合成葡萄糖</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-icon">🌿</div>
+      <h3>養分輸送</h3>
+      <p>葡萄糖溶於水後，透過韌皮部輸送至全株，供根、莖、花、果實各部位使用</p>
+    </div>
+  </div>
+
+  <div class="funfact-bar">
+    <span class="fb-icon">💡</span>
+    <div>
+      <strong>你知道嗎？</strong>
+      地球大氣中約21%的氧氣，幾乎全來自植物與藻類的光合作用。一棵成熟大樹每年可固定約22公斤的CO₂，並釋放出足夠一個成年人呼吸12個月的氧氣。植物是地球上最偉大的「太陽能工廠」！
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANEL 1: 根部吸收
+     ============================================================ -->
+<div class="panel" id="panel-1">
+  <div class="panel-title">🌱 根部吸收：從土壤汲取養分</div>
+
+  <!-- Scene: soil cross-section + mineral cards -->
+  <div class="root-scene">
+    <!-- SVG soil diagram -->
+    <div style="background:linear-gradient(180deg,#87ceeb 0%,#87ceeb 28%,#d4a96a 28%,#b8885a 55%,#8a6035 55%,#6b4a28 100%);border-radius:20px;overflow:hidden;position:relative;min-height:320px;display:flex;align-items:center;justify-content:center;">
+      <svg viewBox="0 0 260 300" width="100%" style="max-width:260px;">
+        <!-- sky label -->
+        <text x="130" y="22" text-anchor="middle" font-family="Microsoft JhengHei,sans-serif" font-size="11" fill="#1a3a6a" font-weight="bold">空氣</text>
+        <!-- soil label -->
+        <text x="130" y="108" text-anchor="middle" font-family="Microsoft JhengHei,sans-serif" font-size="11" fill="#5a3a1a" font-weight="bold">表土（有機質豐富）</text>
+        <text x="130" y="176" text-anchor="middle" font-family="Microsoft JhengHei,sans-serif" font-size="11" fill="#4a2a10" font-weight="bold">深土（礦物質層）</text>
+
+        <!-- CO2 arrows entering leaf -->
+        <text x="14" y="55" font-size="10" fill="#1a4a9a" font-family="sans-serif">CO₂↓</text>
+        <text x="200" y="45" font-size="10" fill="#2d7a2d" font-family="sans-serif">O₂↑</text>
+
+        <!-- Plant stem -->
+        <rect x="122" y="32" width="16" height="52" rx="7" fill="#5a8a3c"/>
+        <!-- Leaves (simple) -->
+        <ellipse cx="110" cy="42" rx="22" ry="12" fill="#6bbf3d" transform="rotate(-25,110,42)"/>
+        <ellipse cx="150" cy="38" rx="20" ry="11" fill="#52a830" transform="rotate(20,150,38)"/>
+
+        <!-- Main root -->
+        <path d="M130,84 C130,120 125,155 118,190 C112,220 100,240 90,265" stroke="#8b6040" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- Lateral roots -->
+        <path d="M126,110 C105,118 90,115 75,120" stroke="#8b6040" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M122,135 C140,145 155,140 168,148" stroke="#8b6040" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M118,160 C100,170 88,168 74,175" stroke="#8b6040" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M114,183 C132,192 148,190 162,198" stroke="#8b6040" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+        <!-- Root hairs (tiny lines) -->
+        <g stroke="#a07050" stroke-width="1.2" opacity="0.8">
+          <line x1="75" y1="120" x2="60" y2="116"/><line x1="75" y1="120" x2="65" y2="128"/>
+          <line x1="168" y1="148" x2="182" y2="144"/><line x1="168" y1="148" x2="178" y2="155"/>
+          <line x1="74" y1="175" x2="58" y2="172"/><line x1="74" y1="175" x2="62" y2="181"/>
+          <line x1="162" y1="198" x2="176" y2="195"/><line x1="162" y1="198" x2="170" y2="205"/>
+          <line x1="90" y1="265" x2="76" y2="268"/><line x1="90" y1="265" x2="80" y2="258"/>
+        </g>
+
+        <!-- Water drops animating up -->
+        <circle cx="130" cy="200" r="4" fill="#4fc3f7" opacity="0.8">
+          <animate attributeName="cy" values="210;140;80" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0.8;0" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="128" cy="180" r="3" fill="#4fc3f7" opacity="0.7">
+          <animate attributeName="cy" values="210;130;70" dur="3.5s" repeatCount="indefinite" begin="1.2s"/>
+          <animate attributeName="opacity" values="0.7;0.7;0" dur="3.5s" repeatCount="indefinite" begin="1.2s"/>
+        </circle>
+
+        <!-- Root hair label -->
+        <text x="192" y="158" font-size="9" fill="#c8a060" font-family="Microsoft JhengHei,sans-serif">↑ 根毛</text>
+
+        <!-- Water arrows -->
+        <text x="50" y="200" font-size="9" fill="#4fc3f7" font-family="sans-serif">H₂O↑</text>
+        <text x="50" y="212" font-size="9" fill="#ffd54f" font-family="sans-serif">礦物質↑</text>
+      </svg>
+    </div>
+
+    <!-- Mineral cards 2x3 -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="color:#a8e063;font-weight:700;font-size:15px;text-align:center;margin-bottom:4px;">🧪 植物必需礦物質</div>
+      <div class="mineral-cards">
+        <div class="mineral-card mc-n">
+          <div class="mc-icon">🌿</div>
+          <h4>氮（N）</h4>
+          <p>合成蛋白質與葉綠素；缺乏時葉片發黃</p>
+        </div>
+        <div class="mineral-card mc-p">
+          <div class="mc-icon">🌸</div>
+          <h4>磷（P）</h4>
+          <p>促進開花結果與能量轉移（ATP）；根系發育關鍵</p>
+        </div>
+        <div class="mineral-card mc-k">
+          <div class="mc-icon">💪</div>
+          <h4>鉀（K）</h4>
+          <p>調節氣孔開閉與水分平衡；增強抵抗力</p>
+        </div>
+        <div class="mineral-card mc-ca">
+          <div class="mc-icon">🦴</div>
+          <h4>鈣（Ca）</h4>
+          <p>構成細胞壁；維持細胞膜穩定</p>
+        </div>
+        <div class="mineral-card mc-mg">
+          <div class="mc-icon">🔬</div>
+          <h4>鎂（Mg）</h4>
+          <p>葉綠素的核心元素；光合作用不可缺少</p>
+        </div>
+        <div class="mineral-card mc-fe">
+          <div class="mc-icon">⚙️</div>
+          <h4>鐵（Fe）</h4>
+          <p>合成葉綠素的輔助因子；缺乏時葉脈間黃化</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Root absorption mechanisms -->
+  <div class="section-title">🔬 根部如何吸收水分與礦物質？</div>
+  <div class="osmosis-row">
+    <div class="osmosis-card">
+      <div class="oc-icon">💧</div>
+      <h4>滲透作用（Osmosis）</h4>
+      <p>根毛細胞液濃度高於土壤水，水分從濃度低→高的方向進入細胞</p>
+    </div>
+    <div class="osmosis-card">
+      <div class="oc-icon">⚡</div>
+      <h4>主動運輸（Active Transport）</h4>
+      <p>消耗植物能量（ATP），將礦物質離子逆濃度梯度泵入根部細胞</p>
+    </div>
+    <div class="osmosis-card">
+      <div class="oc-icon">🌊</div>
+      <h4>木質部輸送（Xylem）</h4>
+      <p>水分與礦物質進入根部後，由木質部像水管一樣輸送至莖葉</p>
+    </div>
+    <div class="osmosis-card">
+      <div class="oc-icon">💨</div>
+      <h4>蒸散拉力（Transpiration Pull）</h4>
+      <p>葉片氣孔蒸發水分，產生向上的拉力，帶動水柱持續上升</p>
+    </div>
+  </div>
+
+  <div class="root-info-box">
+    <strong>🌱 根毛的秘密：</strong> 根毛是根表皮細胞的細長突起，每平方公分的根表面可達 400 條根毛，大幅增加吸收面積。一株黑麥草的根毛總長可超過 10,000 公里，相當於繞地球四分之一圈！
+  </div>
+
+  <!-- Compare table -->
+  <div class="section-title">📊 水分 vs 礦物質的吸收比較</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>比較項目</th>
+        <th>💧 水分吸收</th>
+        <th>⚗️ 礦物質吸收</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>驅動力</td>
+        <td>滲透壓差（被動過程）</td>
+        <td>主動運輸（需消耗ATP能量）</td>
+      </tr>
+      <tr>
+        <td>移動方向</td>
+        <td>低濃度 → 高濃度（溶液）</td>
+        <td>可逆濃度梯度進入</td>
+      </tr>
+      <tr>
+        <td>影響因素</td>
+        <td>土壤含水量、溫度、根毛數量</td>
+        <td>土壤pH值、溫度、微生物活動</td>
+      </tr>
+      <tr>
+        <td>輸送管道</td>
+        <td>木質部（導管）</td>
+        <td>木質部（導管）</td>
+      </tr>
+      <tr>
+        <td>缺乏時症狀</td>
+        <td>萎蔫、氣孔關閉、光合效率下降</td>
+        <td>依元素不同：黃葉、壞疽、生長停頓</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="funfact-bar">
+    <span class="fb-icon">💡</span>
+    <div>
+      <strong>驚人事實：</strong>
+      一棵成熟玉米在整個生長季節，可從土壤中吸收多達 200 公升的水分！大多數礦物質並非植物能直接吸收，而是藉助土壤中的菌根菌（mycorrhizal fungi）分解岩石礦物後，才以離子形式進入根部。
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANEL 2: 特殊策略
+     ============================================================ -->
+<div class="panel" id="panel-2">
+  <div class="panel-title">🪤 特殊獲取養分的植物策略</div>
+
+  <div class="strategy-intro">
+    並非所有植物都靠光合作用與根部吸收就能獲得足夠養分。<br>
+    在養分匱乏的環境中，許多植物演化出令人驚嘆的「特殊策略」！
+  </div>
+
+  <!-- Strategy sub-tabs -->
+  <div class="strategy-tabs">
+    <button class="stab active" onclick="showStab(0,this)">🪤 食蟲植物</button>
+    <button class="stab" onclick="showStab(1,this)">🌾 寄生植物</button>
+    <button class="stab" onclick="showStab(2,this)">🍄 菌根共生</button>
+    <button class="stab" onclick="showStab(3,this)">🦠 固氮共生</button>
+  </div>
+
+  <!-- Stab 0: Carnivorous plants -->
+  <div class="stab-panel active" id="stab-0">
+    <div class="special-cards">
+      <div class="scard carnivore">
+        <div class="sc-icon">🪤</div>
+        <h3>豬籠草（Nepenthes）</h3>
+        <p>葉片特化為瓶狀捕蟲籠，內壁光滑並充滿消化液。昆蟲一旦滑落便無法逃脫，植物分泌蛋白酶將其分解，吸收氮、磷等養分。</p>
+        <div class="sc-tag">🌏 產地：熱帶亞洲、馬達加斯加</div>
+        <div class="sc-example">📌 原因：生長於低氮的酸性泥炭沼澤</div>
+      </div>
+      <div class="scard carnivore">
+        <div class="sc-icon">😮</div>
+        <h3>捕蠅草（Venus Flytrap）</h3>
+        <p>葉片由兩片帶刺的「夾板」組成，內側有3根觸發毛。昆蟲在0.1秒內觸碰兩次，葉片瞬間閉合，分泌消化酶吸收獵物養分。</p>
+        <div class="sc-tag">🌏 產地：北美卡羅來納州</div>
+        <div class="sc-example">📌 原因：生長於礦物質極度缺乏的沼澤地</div>
+      </div>
+      <div class="scard carnivore">
+        <div class="sc-icon">🫙</div>
+        <h3>茅膏菜（Sundew）</h3>
+        <p>葉面密布腺毛，分泌晶瑩剔透的黏液吸引昆蟲。一旦獵物被黏住，腺毛會向內彎曲將其包裹，再分泌酶消化吸收。</p>
+        <div class="sc-tag">🌏 產地：全球各大洲</div>
+        <div class="sc-example">📌 原因：廣泛分布於貧瘠濕地生態系</div>
+      </div>
+      <div class="scard carnivore">
+        <div class="sc-icon">🫧</div>
+        <h3>狸藻（Bladderwort）</h3>
+        <p>水中植物，葉片特化為微小囊袋（捕蟲囊）。囊袋內部呈負壓，水蚤等小生物觸碰觸鬚時，囊門瞬間打開，水流將獵物吸入。是植物界最快的捕食機制。</p>
+        <div class="sc-tag">🌏 產地：全球水域</div>
+        <div class="sc-example">📌 特點：捕食速度不到千分之一秒</div>
+      </div>
+    </div>
+    <div class="funfact-bar" style="margin-top:20px;">
+      <span class="fb-icon">🔬</span>
+      <div>
+        <strong>食蟲植物的共同邏輯：</strong>
+        它們仍保有葉綠素，能進行光合作用，但所生長的環境（酸性泥炭沼澤、貧瘠沙地）缺乏氮、磷等礦物質。捕食動物是補充礦物養分的「輔助方案」，而非主要能量來源。
+      </div>
+    </div>
+  </div>
+
+  <!-- Stab 1: Parasitic plants -->
+  <div class="stab-panel" id="stab-1">
+    <div class="special-cards">
+      <div class="scard parasite">
+        <div class="sc-icon">🌺</div>
+        <h3>大王花（Rafflesia）</h3>
+        <p>世界上最大的單朵花，直徑可達1公尺，重達10公斤。完全沒有葉片、莖與根，整株植物就是花，完全寄生於爬藤植物的根組織中，靠吸取宿主養分維生。</p>
+        <div class="sc-tag">🌍 全寄生植物</div>
+        <div class="sc-example">📌 宿主：崖爬藤屬植物（Tetrastigma）</div>
+      </div>
+      <div class="scard parasite">
+        <div class="sc-icon">🌾</div>
+        <h3>菟絲子（Dodder）</h3>
+        <p>橘黃色細絲狀植物，發芽後找到宿主便失去根部，以吸器（haustorium）穿透宿主莖部，直接竊取水分、養分與光合產物，可同時寄生多種宿主。</p>
+        <div class="sc-tag">🌍 全寄生植物</div>
+        <div class="sc-example">📌 農業害草，可危害多種作物</div>
+      </div>
+      <div class="scard parasite">
+        <div class="sc-icon">🌳</div>
+        <h3>槲寄生（Mistletoe）</h3>
+        <p>半寄生植物，擁有葉片可進行光合作用，但根特化為吸器插入宿主木質部，竊取水分與礦物質。常見於聖誕裝飾，卻是樹木的長期吸血鬼。</p>
+        <div class="sc-tag">🌍 半寄生植物</div>
+        <div class="sc-example">📌 宿主：蘋果、橡樹、松樹等</div>
+      </div>
+      <div class="scard parasite">
+        <div class="sc-icon">🪷</div>
+        <h3>列當（Orobanche）</h3>
+        <p>完全沒有葉綠素，全株呈黃褐色。以根吸器連接宿主根系，吸收全部所需養分。對農業危害極大，可感染胡蘿蔔、番茄、豌豆等作物根系。</p>
+        <div class="sc-tag">🌍 全寄生植物</div>
+        <div class="sc-example">📌 農業重要害草，防治困難</div>
+      </div>
+    </div>
+    <div class="funfact-bar" style="margin-top:20px;">
+      <span class="fb-icon">🔬</span>
+      <div>
+        <strong>全寄生 vs 半寄生：</strong>
+        全寄生植物（如菟絲子、列當）完全依賴宿主，失去光合能力；半寄生植物（如槲寄生）保留葉綠素，僅靠宿主補充水分與礦物質。兩者都以吸器穿入宿主組織，像「植物版吸血鬼」。
+      </div>
+    </div>
+  </div>
+
+  <!-- Stab 2: Mycorrhiza -->
+  <div class="stab-panel" id="stab-2">
+    <div class="special-cards">
+      <div class="scard mycorrhiza">
+        <div class="sc-icon">🍄</div>
+        <h3>叢枝菌根（AM fungi）</h3>
+        <p>真菌菌絲侵入根細胞，形成「叢枝」狀結構（arbuscules），是植物與真菌的最直接界面。植物提供光合糖分，真菌回饋磷、氮等礦物質及水分。</p>
+        <div class="sc-tag">🌐 互利共生</div>
+        <div class="sc-example">📌 約80%的陸地植物都依賴此共生</div>
+      </div>
+      <div class="scard mycorrhiza">
+        <div class="sc-icon">🌲</div>
+        <h3>外生菌根（ECM fungi）</h3>
+        <p>菌絲包裹根尖形成「菌套」，並滲入根細胞間隙形成哈蒂氏網（Hartig net）。大幅增加養分吸收面積，並能分泌有機酸溶解岩石礦物，釋放磷、鉀等元素。</p>
+        <div class="sc-tag">🌐 互利共生</div>
+        <div class="sc-example">📌 常見於松、橡、山毛欅等喬木</div>
+      </div>
+      <div class="scard mycorrhiza">
+        <div class="sc-icon">🌐</div>
+        <h3>木廣網路（Wood Wide Web）</h3>
+        <p>森林中的菌根真菌菌絲連結不同樹木的根系，形成巨大地下網路。「母樹」（mother tree）可透過此網路輸送糖分給幼苗，甚至向受傷鄰樹傳遞養分。</p>
+        <div class="sc-tag">🌐 生態系統現象</div>
+        <div class="sc-example">📌 一棵大樹的菌根可連接數百棵樹</div>
+      </div>
+      <div class="scard mycorrhiza">
+        <div class="sc-icon">🌸</div>
+        <h3>蘭科菌根（Orchid mycorrhiza）</h3>
+        <p>蘭花種子極微小，無法儲存足夠養分發芽，必須依靠真菌入侵種子，提供發芽所需的碳水化合物。某些蘭科植物終生依賴真菌，完全失去光合能力。</p>
+        <div class="sc-tag">🌐 部分蘭花為異養</div>
+        <div class="sc-example">📌 如天麻（Gastrodia elata）</div>
+      </div>
+    </div>
+    <div class="funfact-bar" style="margin-top:20px;">
+      <span class="fb-icon">🔬</span>
+      <div>
+        <strong>菌根的超能力：</strong>
+        菌根真菌的菌絲直徑只有根毛的1/10，能鑽入更細小的土壤孔隙，使植物的有效吸收面積增大數百倍。研究顯示，有菌根共生的植物抗旱能力可提升50%以上，磷吸收效率更高出80%。
+      </div>
+    </div>
+  </div>
+
+  <!-- Stab 3: Nitrogen fixation -->
+  <div class="stab-panel" id="stab-3">
+    <div class="special-cards">
+      <div class="scard nitrogen">
+        <div class="sc-icon">🫘</div>
+        <h3>豆科根瘤菌（Rhizobium）</h3>
+        <p>根瘤菌侵入豆科植物根毛，誘導根部形成根瘤（nodule）。根瘤菌將空氣中的氮氣（N₂）轉化為氨（NH₃），植物可直接吸收利用；植物則提供糖分給細菌。</p>
+        <div class="sc-tag">🌐 互利共生</div>
+        <div class="sc-example">📌 大豆、豌豆、花生、苜蓿等</div>
+      </div>
+      <div class="scard nitrogen">
+        <div class="sc-icon">🌿</div>
+        <h3>弗蘭克氏菌（Frankia）</h3>
+        <p>非豆科的固氮共生體，與赤楊（alder）等樹木共生，形成根瘤。常見於河岸與火後復原地，可大量固定氮素，加速生態系統養分循環與植被恢復。</p>
+        <div class="sc-tag">🌐 互利共生</div>
+        <div class="sc-example">📌 赤楊、沙棘、木麻黃等</div>
+      </div>
+      <div class="scard nitrogen">
+        <div class="sc-icon">🌊</div>
+        <h3>藍藻（Cyanobacteria）</h3>
+        <p>部分藍藻（如魚腥藻 Anabaena）可固定大氣氮，並與水生蕨類滿江紅共生。水稻田利用此特性作為天然「綠肥」，幫助稻田補充氮肥，有千年農業歷史。</p>
+        <div class="sc-tag">🌐 互利共生</div>
+        <div class="sc-example">📌 滿江紅（Azolla）是著名共生體</div>
+      </div>
+      <div class="scard nitrogen">
+        <div class="sc-icon">🌾</div>
+        <h3>土壤自由固氮菌</h3>
+        <p>土壤中的固氮菌（如固氮菌屬 Azotobacter）可獨立固定大氣氮，與植物根系保持鬆散關聯（聯合固氮），提供植物可吸收的無機氮，但效率低於根瘤共生。</p>
+        <div class="sc-tag">🌐 聯合固氮</div>
+        <div class="sc-example">📌 甘蔗、水稻、玉米等禾本科植物</div>
+      </div>
+    </div>
+    <div class="funfact-bar" style="margin-top:20px;">
+      <span class="fb-icon">🔬</span>
+      <div>
+        <strong>固氮共生的農業意義：</strong>
+        大豆與根瘤菌共生，每公頃農田每年可固定100–300公斤的氮素，相當於施用數百公斤化學氮肥！這正是為什麼農業上常採用豆科植物輪作，既減少化肥用量，又改善土壤肥力。
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary comparison table -->
+  <div class="section-title">📊 特殊策略綜合比較</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>策略類型</th>
+        <th>獲取的養分</th>
+        <th>與對方關係</th>
+        <th>典型代表</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>🪤 食蟲植物</td>
+        <td>動物體提供氮、磷等礦物質</td>
+        <td>捕食（單向獲益）</td>
+        <td>豬籠草、捕蠅草</td>
+      </tr>
+      <tr>
+        <td>🌾 全寄生植物</td>
+        <td>水分、礦物質、有機物全部來自宿主</td>
+        <td>寄生（宿主受害）</td>
+        <td>菟絲子、大王花</td>
+      </tr>
+      <tr>
+        <td>🌳 半寄生植物</td>
+        <td>水分與礦物質來自宿主，自行光合</td>
+        <td>寄生（宿主輕微受害）</td>
+        <td>槲寄生</td>
+      </tr>
+      <tr>
+        <td>🍄 菌根共生</td>
+        <td>真菌提供磷、氮、水分；植物提供糖</td>
+        <td>互利共生（雙方受益）</td>
+        <td>幾乎所有陸地植物</td>
+      </tr>
+      <tr>
+        <td>🦠 固氮共生</td>
+        <td>細菌將N₂轉為NH₃；植物提供糖</td>
+        <td>互利共生（雙方受益）</td>
+        <td>大豆、赤楊</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================================
+     PANEL 3: 養分循環
+     ============================================================ -->
+<div class="panel" id="panel-3">
+  <div class="panel-title">♻️ 養分循環：自然界的物質流動</div>
+
+  <!-- Cycle diagram -->
+  <div class="cycle-diagram">
+    <div style="color:#a8e063;font-weight:700;font-size:16px;margin-bottom:16px;">🌍 生態系養分循環示意</div>
+    <div class="cycle-nodes">
+      <div class="cycle-node">
+        <span class="cn-icon">☀️</span>
+        <span>太陽能</span>
+        <span style="font-size:10px;color:#f9d423;">能量輸入</span>
+      </div>
+      <span class="cycle-arrow">→</span>
+      <div class="cycle-node">
+        <span class="cn-icon">🌿</span>
+        <span>植物（生產者）</span>
+        <span style="font-size:10px;color:#a8e063;">光合作用</span>
+      </div>
+      <span class="cycle-arrow">→</span>
+      <div class="cycle-node">
+        <span class="cn-icon">🐛</span>
+        <span>草食動物（消費者）</span>
+        <span style="font-size:10px;color:#ffd54f;">攝食</span>
+      </div>
+      <span class="cycle-arrow">→</span>
+      <div class="cycle-node">
+        <span class="cn-icon">🦅</span>
+        <span>肉食動物（消費者）</span>
+        <span style="font-size:10px;color:#f48fb1;">攝食</span>
+      </div>
+    </div>
+    <div class="cycle-nodes" style="justify-content:center;">
+      <span class="cycle-arrow" style="transform:rotate(90deg)">→</span>
+    </div>
+    <div class="cycle-nodes">
+      <div class="cycle-node">
+        <span class="cn-icon">🌱</span>
+        <span>植物吸收</span>
+        <span style="font-size:10px;color:#4fc3f7;">根部吸收</span>
+      </div>
+      <span class="cycle-arrow">←</span>
+      <div class="cycle-node">
+        <span class="cn-icon">🌍</span>
+        <span>土壤（礦物質）</span>
+        <span style="font-size:10px;color:#ce93d8;">釋放</span>
+      </div>
+      <span class="cycle-arrow">←</span>
+      <div class="cycle-node">
+        <span class="cn-icon">🍄</span>
+        <span>分解者（真菌/細菌）</span>
+        <span style="font-size:10px;color:#ef9a9a;">分解遺體</span>
+      </div>
+      <span class="cycle-arrow">←</span>
+      <div class="cycle-node">
+        <span class="cn-icon">💀</span>
+        <span>動植物遺體</span>
+        <span style="font-size:10px;color:#bcaaa4;">有機物</span>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:#888;">
+      ♻️ 礦物質與有機物不斷循環再利用，能量則單向流動由太陽輸入、最終以熱能散失
+    </div>
+  </div>
+
+  <!-- Major element cycles -->
+  <div class="section-title">🔄 植物必需元素的來源與循環</div>
+  <div class="nutrient-grid">
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">🌬️</span>
+        <div>
+          <h4>碳循環（Carbon Cycle）</h4>
+          <div class="nc-sub">C — 有機物的骨架</div>
+        </div>
+      </div>
+      <p>植物透過光合作用從大氣中固定CO₂，合成有機物。呼吸作用、火災、微生物分解再將碳返回大氣。</p>
+      <span class="nc-badge nc-macro">大量元素</span>
+    </div>
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">🌿</span>
+        <div>
+          <h4>氮循環（Nitrogen Cycle）</h4>
+          <div class="nc-sub">N — 蛋白質與核酸核心</div>
+        </div>
+      </div>
+      <p>大氣N₂→（固氮菌）→NH₃→（硝化菌）→NO₃⁻，植物吸收硝酸根離子；動植物遺體再由分解菌釋回土壤。</p>
+      <span class="nc-badge nc-macro">大量元素</span>
+    </div>
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">💧</span>
+        <div>
+          <h4>水循環（Water Cycle）</h4>
+          <div class="nc-sub">H₂O — 光合作用原料</div>
+        </div>
+      </div>
+      <p>降雨滲入土壤→根部吸收→木質部輸送→氣孔蒸散→雲霧降雨。植物是水循環中的重要驅動者。</p>
+      <span class="nc-badge nc-macro">大量元素</span>
+    </div>
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">🌊</span>
+        <div>
+          <h4>磷循環（Phosphorus Cycle）</h4>
+          <div class="nc-sub">P — ATP、DNA不可缺</div>
+        </div>
+      </div>
+      <p>岩石風化釋出磷酸根→土壤溶液→植物吸收→動物攝食→遺體分解→回到土壤。磷無氣態循環，易流失至水體。</p>
+      <span class="nc-badge nc-macro">大量元素</span>
+    </div>
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">⚙️</span>
+        <div>
+          <h4>鐵、鋅等微量元素</h4>
+          <div class="nc-sub">Fe、Zn、Mn、Cu…</div>
+        </div>
+      </div>
+      <p>主要來自岩石礦物風化，土壤pH值強烈影響溶解度。酸性土壤Fe、Mn較易溶出；鹼性土壤易缺鐵導致黃化。</p>
+      <span class="nc-badge nc-micro">微量元素</span>
+    </div>
+    <div class="nutrient-card">
+      <div class="nc-head">
+        <span class="nc-icon">🔥</span>
+        <div>
+          <h4>火燒與養分釋放</h4>
+          <div class="nc-sub">生態系中的重置機制</div>
+        </div>
+      </div>
+      <p>森林火災將有機物迅速礦化，灰燼富含鉀、磷、鈣，能快速補充土壤養分，是某些生態系統的自然更新機制。</p>
+      <span class="nc-badge nc-macro">循環機制</span>
+    </div>
+  </div>
+
+  <!-- Nutrient comparison table -->
+  <div class="section-title">📊 植物養分來源彙整</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>獲取途徑</th>
+        <th>取得的物質</th>
+        <th>獲取方式</th>
+        <th>部位</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>☀️ 光合作用</td>
+        <td>有機物（葡萄糖）、能量</td>
+        <td>CO₂ + H₂O + 光能 → C₆H₁₂O₆</td>
+        <td>葉片（葉綠體）</td>
+      </tr>
+      <tr>
+        <td>💧 滲透吸水</td>
+        <td>水分（H₂O）</td>
+        <td>滲透作用（被動）</td>
+        <td>根毛</td>
+      </tr>
+      <tr>
+        <td>⚡ 主動運輸</td>
+        <td>礦物質離子（N、P、K…）</td>
+        <td>消耗ATP，逆濃度梯度</td>
+        <td>根毛</td>
+      </tr>
+      <tr>
+        <td>🍄 菌根共生</td>
+        <td>磷、氮、水分</td>
+        <td>真菌分解礦物後交換</td>
+        <td>根部（菌根）</td>
+      </tr>
+      <tr>
+        <td>🦠 固氮共生</td>
+        <td>可利用氮（NH₃/NO₃⁻）</td>
+        <td>固氮菌轉化大氣N₂</td>
+        <td>根瘤</td>
+      </tr>
+      <tr>
+        <td>🪤 食蟲（特殊）</td>
+        <td>氮、磷等礦物質</td>
+        <td>捕食昆蟲，消化吸收</td>
+        <td>特化葉片</td>
+      </tr>
+      <tr>
+        <td>🌾 寄生（特殊）</td>
+        <td>水、糖、礦物質（全部）</td>
+        <td>吸器插入宿主組織竊取</td>
+        <td>吸器</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="funfact-bar">
+    <span class="fb-icon">🌍</span>
+    <div>
+      <strong>生態系的關鍵角色：</strong>
+      植物是地球上所有生態系統的基礎。全球植物每年固定的碳約達1,200億噸，相當於人類年排放量的十倍以上。沒有植物對太陽能的轉化，地球上幾乎所有生命都無法存在。了解植物如何獲取養分，就是理解整個生命世界的起點。
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num">17</span>
+      <div class="stat-label">植物必需的元素種類</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">80%</span>
+      <div class="stat-label">陸地植物依賴菌根共生</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">700+</span>
+      <div class="stat-label">已知食蟲植物種類</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">1,200億</span>
+      <div class="stat-label">植物年固碳量（公噸）</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .content -->
+
+<script>
+  function showPanel(index, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + index).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function showStab(index, btn) {
+    document.querySelectorAll('.stab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+    document.getElementById('stab-' + index).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
